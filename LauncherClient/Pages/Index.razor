@@ -1,7 +1,18 @@
 ﻿@page "/"
+<MudText Typo="Typo.h3">Добро пожаловать</MudText>
+<MudDivider Class="mt-2" />
+<MudStack Class="align-content-center">
+    <MudTabs Centered="true">
+        <MudTabPanel Text="Десктопные приложения" Icon="@Icons.Material.Filled.DesktopWindows">
+            <ProjectsList IsWinService="false" />
+        </MudTabPanel>
+        <MudTabPanel Text="Службы Windows" Icon="@Icons.Material.Filled.MiscellaneousServices">
+            <ProjectsList IsWinService="true" />
+        </MudTabPanel>
+    </MudTabs>
+    <MudButton Class="mt-n12" Style="align-self:center; width: 300px" Href="/createProject" Variant="Variant.Filled">Добавить новое приложение</MudButton>
+</MudStack>
 
-<h1>Hello, world!</h1>
+@code {
 
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+}

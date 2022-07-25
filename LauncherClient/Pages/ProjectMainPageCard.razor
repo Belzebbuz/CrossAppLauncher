@@ -1,0 +1,27 @@
+﻿
+
+<MudCard Class="mt-4">
+    <MudCardContent>
+        <MudStack Row="true">
+            <MudIcon Icon="@(Project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" />
+            <MudText Typo="Typo.h5">@Project.Name</MudText>
+        </MudStack>
+        <MudText Typo="Typo.body2">@Project.Description</MudText>
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="NavigateToProjectInfo">Подробнее</MudButton>
+
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public ProjectDTO Project { get; set; }
+
+    
+
+    private void NavigateToProjectInfo()
+    {
+        NavManager.NavigateTo($"projectInfo/{Project.Id}");
+    }
+}

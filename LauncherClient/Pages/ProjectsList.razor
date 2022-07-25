@@ -1,0 +1,53 @@
+﻿
+<MudAutocomplete T="string" Label="Поиск" Value="value1" AdornmentIcon="@Icons.Material.Filled.Search"
+                 ValueChanged="@FilterByValue"
+                 SearchFunc="@Search" Variant="Variant.Outlined" ResetValueOnEmptyText="true"
+                 Class="mb-2" />
+<MudPaper Class="flex-column mb-5" Elevation="0">
+    <MudContainer Style="height:400px;overflow:auto;" Fixed="false">
+        @if (_projects != null)
+        {
+            foreach (var project in _projects)
+            {
+                <ProjectMainPageCard Project="project" />
+            }
+        }
+        else
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                <LoadingProject />
+            }
+        }
+    </MudContainer>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public bool IsWinService { get; set; }
+    private string value1;
+    private List<ProjectDTO> _projects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _projects = await ProjectData.GetProjectsByIsWinService(IsWinService);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<IEnumerable<string>> Search(string value)
+    {
+        _projects = await ProjectData.GetProjectsByFilter(IsWinService, value);
+        return _projects.Select(x => x.Name);
+    }
+
+    private async Task FilterByValue(string value)
+    {
+        _projects = await ProjectData.GetProjectsByFilter(IsWinService, value);
+    }
+}

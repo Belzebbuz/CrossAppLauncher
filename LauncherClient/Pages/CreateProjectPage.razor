@@ -1,0 +1,39 @@
+﻿@page "/createProject"
+@using System.ComponentModel.DataAnnotations
+<MudPaper Class="pa-4">
+    <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+        <MudTextField T="string" @bind-Value=@_name Label="Название приложения" Required="true" RequiredError="Название обязательно к заполнению!" />
+        <MudTextField T="string" @bind-Value=@_description Label="Описание" Required="true" RequiredError="Описание обязательно к заполнению!" />
+        <MudTextField T="string" @bind-Value=@_exeFile Label="Название исполняющего файла" Required="true" HelperText="myapp.exe" />
+        <div class="d-flex align-center justify-space-between">
+            <MudCheckBox T="bool" @bind-Checked=@_isWindowsService Label="Служба Windows" />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" OnClick="@Submit" Class="ml-auto">Сохранить</MudButton>
+        </div>
+    </MudForm>
+</MudPaper>
+<MudPaper Class="pa-4 mt-4">
+    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" Class="mx-2">Назад</MudButton>
+</MudPaper>
+
+@code {
+    MudForm form;
+    bool success;
+    string[] errors = { };
+    private string _name;
+    private string _description;
+    private string _exeFile;
+    private bool _isWindowsService;
+
+    private async Task Submit()
+    {
+        try
+        {
+            var result = await ProjectData.CreateProject(new CreateProjectDTO(_name, _description, _isWindowsService, _exeFile));
+            NavManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+}

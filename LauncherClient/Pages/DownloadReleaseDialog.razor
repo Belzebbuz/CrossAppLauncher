@@ -1,0 +1,26 @@
+﻿
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Путь к скачиванию</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Placeholder=@RandomPath @bind-Value=@Path />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" OnClick="@Save">Скачать</MudButton>
+    </DialogActions>
+</MudDialog>
+@code{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    public string Path { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+    public string RandomPath { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+    private void Save()
+    {
+        MudDialog.Close(DialogResult.Ok(Path));
+    }
+}

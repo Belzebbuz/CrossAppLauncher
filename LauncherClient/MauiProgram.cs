@@ -1,5 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components.WebView.Maui;
 using LauncherClient.Data;
+using MudBlazor.Services;
+using LauncherClient.ApplicationLayer;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using LauncherClient.Utilities;
+
 
 namespace LauncherClient;
 
@@ -16,10 +21,18 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
-		#if DEBUG
+		builder.Services.AddMudServices();
+		builder.Services.AddApplication();
+		builder.Services.AddSingleton<IFilePicker>(FilePicker.Default);
+		
+
+#if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-		
+#if WINDOWS
+		builder.Services.AddTransient<IFolderPicker, Platforms.Windows.FolderPicker>();
+#endif
+
 		builder.Services.AddSingleton<WeatherForecastService>();
 
 		return builder.Build();

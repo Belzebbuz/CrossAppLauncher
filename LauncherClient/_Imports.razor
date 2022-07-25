@@ -6,3 +6,11 @@
 @using Microsoft.JSInterop
 @using LauncherClient
 @using LauncherClient.Shared
+@using MudBlazor
+@using LauncherClient.Data.Models
+@using LauncherClient.ApplicationLayer.HttpServices
+@using LauncherClient.Utilities
+
+@inject IProjectData ProjectData
+@inject ISnackbar Snackbar
+@inject NavigationManager NavManager

@@ -1,0 +1,140 @@
+﻿@page "/projectInfo/{Id:guid}"
+@inject IDialogService Dialog
+@inject IFilePicker FilePicker
+@inject IFolderPicker FolderPicker
+
+@if (_project != null)
+{
+    <MudStack Class="d-flex align-center justify-space-between" Row="true">
+        <MudText Typo="Typo.h2">@_project.Name</MudText>
+        <MudIcon Icon="@(_project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" Size="Size.Medium" />
+    </MudStack>
+    <MudDivider Class="mb-4" />
+    <MudPaper Height="450px" Class="flex-column p-3">
+        <MudStack Row="true" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Описание:</MudText>
+            <MudStack Row="true">
+                <MudButton Disabled=@_processingLoadToServer OnClick="@LoadFiles" Variant="Variant.Filled" Color="Color.Primary">
+                    @if (_processingLoadToServer)
+                    {
+                        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Загрузка</MudText>
+                    }
+                    else
+                    {
+                        <MudIcon Class="mr-2" Icon="@Icons.Filled.CloudUpload" />
+                        <MudText>Загрузить</MudText>
+                    }
+                </MudButton>
+                <MudButton OnClick="@DownloadFile" Disabled=@_isDownloadButtonDisabled
+                       Variant="Variant.Outlined"
+                       Color="Color.Secondary" StartIcon="@Icons.Filled.CloudDownload">Скачать</MudButton>
+            </MudStack>
+        </MudStack>
+        <MudText Class="mt-3" Typo="Typo.body1">@_project.Description</MudText>
+        <MudText Typo="Typo.body1">Исполняющий файл: @_project.ExeFile</MudText>
+        @if (_project.ReleaseAssemblies.Count > 0)
+        {
+                <MudText Typo="Typo.h6" Class="mt-3">История обновлений.</MudText>
+                <MudDivider Class="mb-3" />
+            <MudContainer Style="height: 250px; overflow:auto;">
+
+                @foreach (var release in _project.ReleaseAssemblies.OrderByDescending(x => x.ReleaseDate))
+                {
+                    <MudStack Row="true" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Outlined.Info" />
+                        <MudText Typo="Typo.body1">Дата: @release.ReleaseDate</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.body2">@(release.PatchNote ?? "")</MudText>
+                }
+            </MudContainer>
+        }
+    </MudPaper>
+    <MudStack Row="true" Justify="Justify.FlexEnd">
+        <MudButton Class="mt-2" Href="/" Variant="Variant.Filled" Color="Color.Secondary">Назад</MudButton>
+    </MudStack>
+}
+else
+{
+    <LoadingProject />
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool _isDownloadButtonDisabled = true;
+    private ProjectDTO _project;
+    private bool _processingLoadToServer;
+    private bool _processingDownload;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _project = await ProjectData.GetProjectById(Id);
+            if (_project.ReleaseAssemblies.Any())
+            {
+                _isDownloadButtonDisabled = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task LoadFiles()
+    {
+        _processingLoadToServer = true;
+        var customFileType = new FilePickerFileType(
+                new Dictionary<DevicePlatform, IEnumerable<string>>
+                                    {{ DevicePlatform.WinUI, new[] { ".zip" } }});
+        PickOptions options = new()
+            {
+                PickerTitle = "Выберите архив с собранным проектом",
+                FileTypes = customFileType,
+            };
+        var result = await FilePicker.PickAsync(options);
+        if (result == null)
+        {
+            _processingLoadToServer = false;
+            await InvokeAsync(() => StateHasChanged());
+            return;
+        }
+        try
+        {
+            await using var stream = File.OpenRead(result.FullPath);
+            var release = await ProjectData.UploadFile(_project.Id, new Refit.StreamPart(stream, result.FileName, result.ContentType));
+            Snackbar.Add($"Сборка успешно обновлена!", Severity.Success);
+            _processingLoadToServer = false;
+            await OnInitializedAsync();
+            await InvokeAsync(() => StateHasChanged());
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}\n Ошибка при получении данных от сервера", Severity.Error);
+            _processingLoadToServer = false;
+            await InvokeAsync(() => StateHasChanged());
+        }
+    }
+
+    private async void DownloadFile()
+    {
+        var folder = await FolderPicker.PickFolder();
+        if (folder == null)
+            return;
+        try
+        {
+            var path = Path.Combine(folder, $"{_project.Name}.zip");
+            var res = await ProjectData.DownloadLastRelease((Guid)_project.Id);
+            var bytes = await res.ReadAsByteArrayAsync();
+            File.WriteAllBytes(path, bytes);
+            Snackbar.Add($"{path} Сохранен.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

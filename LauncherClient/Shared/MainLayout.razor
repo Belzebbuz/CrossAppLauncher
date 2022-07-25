@@ -1,17 +1,32 @@
 ﻿@inherits LayoutComponentBase
+<MudThemeProvider Theme="@MyCustomTheme"/>
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudDrawer @bind-Open="@open" Class="align-self-end" Fixed="true" Elevation="1" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent Class="pt-6 px-16">
+        <MudContainer>
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+@code {
+    bool open = false;
 
-<div class="page">
-	<div class="sidebar">
-		<NavMenu />
-	</div>
-
-	<main>
-		<div class="top-row px-4">
-			<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-		</div>
-
-		<article class="content px-4">
-			@Body
-		</article>
-	</main>
-</div>
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            Typography = new Typography()
+            {
+                Default = new Default()
+                {
+                    FontFamily = new[] { "Montserrat" }
+                }
+            }
+        };
+}
