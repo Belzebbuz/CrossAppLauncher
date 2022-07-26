@@ -1,0 +1,40 @@
+﻿<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <MudCard>
+        <MudCardContent>
+            <MudTextField Label="Почта" Class="mt-3"
+                          @bind-Value="model.Email" For="@(() => model.Email)" />
+            <MudTextField Label="Пароль" Class="mt-3"
+                          @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton 
+                FullWidth="true"
+                  ButtonType="ButtonType.Submit" 
+                  Variant="Variant.Filled" 
+                  Color="Color.Primary" 
+                  Class="ml-auto">Войти</MudButton>
+        </MudCardActions>
+    </MudCard>
+</EditForm>
+
+@code {
+    UserCredentials model = new UserCredentials();
+    bool success;
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        try
+        {
+            var result = await AccountsClient.LoginAsync(model);
+            await AuthStateProvider.Login(result.Token);
+            NavManager.NavigateTo("/");
+        }
+        catch (Refit.ApiException ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+            Snackbar.Add($"{ex.Content}", Severity.Error);
+        }
+    }
+
+}

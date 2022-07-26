@@ -1,5 +1,7 @@
 ﻿@page "/"
-<MudText Typo="Typo.h3">Добро пожаловать</MudText>
+@attribute [Authorize]
+
+<MudText Class="mt-3" Typo="Typo.h3">Добро пожаловать</MudText>
 <MudDivider Class="mt-2" />
 <MudStack Class="align-content-center">
     <MudTabs Centered="true">
@@ -10,9 +12,21 @@
             <ProjectsList IsWinService="true" />
         </MudTabPanel>
     </MudTabs>
-    <MudButton Class="mt-n12" Style="align-self:center; width: 300px" Href="/createProject" Variant="Variant.Filled">Добавить новое приложение</MudButton>
+    <AuthorizeView Roles="Admin, Dev">
+        <Authorized>
+            <MudButton Class="mt-n12" Style="align-self:center; width: 300px" Href="/createProject" Variant="Variant.Filled">Добавить новое приложение</MudButton>
+        </Authorized>
+    </AuthorizeView>
 </MudStack>
 
 @code {
+    [CascadingParameter] public Task<AuthenticationState> AuthTask { get; set; }
 
+    private System.Security.Claims.ClaimsPrincipal user;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var authState = await AuthTask;
+        this.user = authState.User;
+    }
 }

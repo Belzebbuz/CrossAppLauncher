@@ -1,0 +1,13 @@
+﻿@page "/useraccount"
+@attribute [Authorize]
+
+<AuthorizeView>
+    <MudText Typo="Typo.h6">Аккаунт @context.User.Identity.Name</MudText>
+    <MudButton Variant="Variant.Filled" OnClick="@Logout" Color="Color.Secondary">Выйти</MudButton>
+</AuthorizeView>
+
+@code{
+    private async void Logout(){
+        await AuthStateProvider.Logout();
+    }
+}

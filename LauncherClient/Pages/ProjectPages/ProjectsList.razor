@@ -4,7 +4,7 @@
                  SearchFunc="@Search" Variant="Variant.Outlined" ResetValueOnEmptyText="true"
                  Class="mb-2" />
 <MudPaper Class="flex-column mb-5" Elevation="0">
-    <MudContainer Style="height:400px;overflow:auto;" Fixed="false">
+    <MudContainer Class="p-2" Style="height:60vh; overflow: auto;" Fixed="false">
         @if (_projects != null)
         {
             foreach (var project in _projects)

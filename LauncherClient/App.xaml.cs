@@ -6,7 +6,7 @@ using Windows.Graphics;
 
 namespace LauncherClient;
 
-public partial class App : Application
+public partial class App : Microsoft.Maui.Controls.Application
 {
 	const int WindowWidth = 1200;
 	const int WindowHeight = 700;

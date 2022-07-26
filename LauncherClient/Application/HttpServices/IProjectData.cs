@@ -3,6 +3,7 @@ using Refit;
 
 namespace LauncherClient.ApplicationLayer.HttpServices
 {
+	[Headers("Authorization: Bearer")]
 	public interface IProjectData
 	{
 		[Get("/Apps")]
@@ -19,12 +20,15 @@ namespace LauncherClient.ApplicationLayer.HttpServices
 
 		[Multipart]
 		[Post("/Apps/{id}/addRelease")]
+		[Headers("Authorization: Bearer")]
 		Task<ReleaseAssemblyDTO> UploadFile(Guid? id, [AliasAs("file")] StreamPart stream);
 
-		[Post("/Apps/downloadRelease")]
+		[Get("/Apps/downloadRelease/{id}")]
+		[Headers("Authorization: Bearer")]
 		Task<HttpContent> DownloadLastRelease(Guid id);
 
 		[Post("/Apps")]
+		[Headers("Authorization: Bearer")]
 		Task<Guid> CreateProject(CreateProjectDTO createProjectDTO);
 
 	}

@@ -1,4 +1,5 @@
 ﻿@page "/installed"
+@attribute [Authorize(Roles = "Admin")]
 
 @using LauncherClient.Data
 @inject WeatherForecastService ForecastService

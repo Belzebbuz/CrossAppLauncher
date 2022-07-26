@@ -1,0 +1,90 @@
+﻿@page "/admindashboard"
+@attribute [Authorize(Roles = "Admin")]
+
+<MudDataGrid T="UserDTO" Items="@_users" Class="mt-7" FixedHeader="true" Height="70vh">
+    <Columns>
+        <Column T="UserDTO" Field="Email" Sortable="false" CellStyle="width:30%">
+            <CellTemplate>
+                <MudStack Row="true">
+                    @if (context.Item.Roles.Contains("Admin"))
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Star" />
+                    }
+                    <MudText>@context.Item.Email</MudText>
+                </MudStack>
+            </CellTemplate>
+        </Column>
+        <Column T="UserDTO" Title="Роли" Sortable="false" CellClass="justify-start">
+            <CellTemplate>
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@(async () => await GrandRole(context.Item))" />
+                    <MudText>@string.Join("; ", context.Item.Roles)</MudText>
+                </MudStack>
+            </CellTemplate>
+        </Column>
+        <Column T="UserDTO" CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Outlined.Delete" OnClick="@(async () => await Delete(context.Item.Id))" />
+            </CellTemplate>
+        </Column>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="UserDTO" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+
+    private List<UserDTO> _users;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _users = await AccountsClient.GetAllUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task Delete(string id)
+    {
+        try
+        {
+            await AccountsClient.DeleteUserAsync(id);
+            _users = await AccountsClient.GetAllUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task GrandRole(UserDTO user)
+    {
+        var selectingList = AuthStateProvider.Roles.Select(x =>
+        {
+            var selectItem = new SelectItemEntity();
+            selectItem.Value = x;
+            selectItem.Check = user.Roles.Contains(x);
+            return selectItem;
+        }).ToList();
+        var parameters = new DialogParameters { ["SelectItems"] = selectingList };
+        var dialog = DialogService.Show<SelectRoleDialog>("Выбрать роли", parameters);
+        var result = await dialog.Result;
+        if (result == null)
+            return;
+        var request = new RoleEditDTO{ UserId = user.Id, SelectedRoles = (List<SelectItemEntity>)result.Data};
+        try
+        {
+            await AccountsClient.EditRolesAsync(request);
+            _users = await AccountsClient.GetAllUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+
+    }
+}

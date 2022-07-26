@@ -1,22 +1,34 @@
-﻿using LauncherClient.ApplicationLayer.HttpServices;
+﻿using LauncherClient.Application.HttpServices;
+using LauncherClient.ApplicationLayer.HttpServices;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Refit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http.Headers;
 
-namespace LauncherClient.ApplicationLayer
+namespace LauncherClient.ApplicationLayer;
+
+public static class Startup
 {
-	public static class Startup
+	public static IServiceCollection AddApplication(this IServiceCollection services)
 	{
-		public static IServiceCollection AddApplication(this IServiceCollection services)
+		
+		var token = SecureStorage.GetAsync("token").Result;
+
+		services.AddRefitClient<IProjectData>(new RefitSettings()
 		{
-			services.AddRefitClient<IProjectData>().ConfigureHttpClient(client =>
-			{
-				client.BaseAddress = new Uri("https://localhost:7187/api");//new Uri("https://a8986-e203.s.d-f.pw/api");
-			});
-			return services;
-		}
+			AuthorizationHeaderValueGetter = () => Task.FromResult(token)
+		}).ConfigureHttpClient(client =>
+		{
+			client.BaseAddress = new Uri("https://localhost:7187/api");//new Uri("https://a8986-e203.s.d-f.pw/api");
+		});
+
+		services.AddRefitClient<IAccountsClient>(new RefitSettings()
+		{
+			AuthorizationHeaderValueGetter = () => Task.FromResult(token)
+		}).ConfigureHttpClient(client =>
+		{
+			client.BaseAddress = new Uri("https://localhost:7187/accounts");//new Uri("https://a8986-e203.s.d-f.pw/api");
+		});
+
+		return services;
 	}
 }

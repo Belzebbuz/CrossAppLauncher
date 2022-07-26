@@ -1,0 +1,30 @@
+﻿
+<MudDialog>
+    <DialogContent>
+        @if (SelectItems != null)
+            {
+            foreach (var item in SelectItems)
+                {
+                    <MudStack Style="width: 300px; vertical-align:central" Row = "true" AlignItems="AlignItems.Center">
+                        <MudCheckBox Size="Size.Small" @bind-Checked=@item.Check></MudCheckBox>
+                        <MudText>@item.Value</MudText>
+                    </MudStack>
+                }
+            }
+    </DialogContent>
+    <DialogActions>
+        <MudButton StartIcon="@Icons.Material.Outlined.Check" OnClick="PassSelectedItem">Выбрать</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code{
+    [Parameter]
+    public List<SelectItemEntity> SelectItems { get; set; } = new();
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    private void PassSelectedItem()
+    {
+        MudDialog.Close(DialogResult.Ok(SelectItems));
+    }
+}

@@ -1,5 +1,5 @@
 ﻿@page "/createProject"
-@using System.ComponentModel.DataAnnotations
+
 <MudPaper Class="pa-4">
     <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
         <MudTextField T="string" @bind-Value=@_name Label="Название приложения" Required="true" RequiredError="Название обязательно к заполнению!" />
@@ -11,9 +11,9 @@
         </div>
     </MudForm>
 </MudPaper>
-<MudPaper Class="pa-4 mt-4">
+<MudStack Row="true" Justify="Justify.FlexEnd" Class="pa-4 mt-4">
     <MudButton Href="/" Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" Class="mx-2">Назад</MudButton>
-</MudPaper>
+</MudStack>
 
 @code {
     MudForm form;

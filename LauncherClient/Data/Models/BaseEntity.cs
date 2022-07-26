@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace LauncherClient.Data.Models
 {
-	public class ReleaseAssemblyDTO : BaseEntity
+	public class BaseEntity
 	{
-		public Guid Id { get; set; }
-		public string PatchNote { get; set; }
+		public DateTime UpdateTime { get; set; }
+		public string UserEmail { get; set; }
 	}
 }

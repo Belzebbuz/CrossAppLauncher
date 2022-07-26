@@ -10,22 +10,24 @@
         <MudIcon Icon="@(_project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" Size="Size.Medium" />
     </MudStack>
     <MudDivider Class="mb-4" />
-    <MudPaper Height="450px" Class="flex-column p-3">
+    <MudPaper Height="70vh" Class="flex-column p-3">
         <MudStack Row="true" Justify="Justify.SpaceBetween">
-            <MudText Typo="Typo.h6">Описание:</MudText>
+            <MudText Typo="Typo.h6">Автор: @_project.UserEmail</MudText>
             <MudStack Row="true">
-                <MudButton Disabled=@_processingLoadToServer OnClick="@LoadFiles" Variant="Variant.Filled" Color="Color.Primary">
-                    @if (_processingLoadToServer)
-                    {
-                        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true" />
-                        <MudText Class="ms-2">Загрузка</MudText>
-                    }
-                    else
-                    {
-                        <MudIcon Class="mr-2" Icon="@Icons.Filled.CloudUpload" />
-                        <MudText>Загрузить</MudText>
-                    }
-                </MudButton>
+                <AuthorizeView Roles="Dev">
+                    <MudButton Disabled=@_processingLoadToServer OnClick="@LoadFiles" Variant="Variant.Filled" Color="Color.Primary">
+                        @if (_processingLoadToServer)
+                        {
+                            <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Загрузка</MudText>
+                        }
+                        else
+                        {
+                            <MudIcon Class="mr-2" Icon="@Icons.Filled.CloudUpload" />
+                            <MudText>Загрузить</MudText>
+                        }
+                    </MudButton>
+                </AuthorizeView>
                 <MudButton OnClick="@DownloadFile" Disabled=@_isDownloadButtonDisabled
                        Variant="Variant.Outlined"
                        Color="Color.Secondary" StartIcon="@Icons.Filled.CloudDownload">Скачать</MudButton>
@@ -35,15 +37,16 @@
         <MudText Typo="Typo.body1">Исполняющий файл: @_project.ExeFile</MudText>
         @if (_project.ReleaseAssemblies.Count > 0)
         {
-                <MudText Typo="Typo.h6" Class="mt-3">История обновлений.</MudText>
-                <MudDivider Class="mb-3" />
-            <MudContainer Style="height: 250px; overflow:auto;">
+            <MudText Typo="Typo.h6" Class="mt-3">История обновлений.</MudText>
+            <MudDivider Class="mb-3" />
+            <MudContainer Style="height: 40vh; overflow:auto;">
 
-                @foreach (var release in _project.ReleaseAssemblies.OrderByDescending(x => x.ReleaseDate))
+                @foreach (var release in _project.ReleaseAssemblies.OrderByDescending(x => x.UpdateTime))
                 {
                     <MudStack Row="true" Class="mb-3">
                         <MudIcon Icon="@Icons.Material.Outlined.Info" />
-                        <MudText Typo="Typo.body1">Дата: @release.ReleaseDate</MudText>
+                        <MudText Typo="Typo.body1">Дата: @release.UpdateTime</MudText>
+                        <MudText Typo="Typo.body1">Автор: @release.UserEmail</MudText>
                     </MudStack>
                     <MudText Typo="Typo.body2">@(release.PatchNote ?? "")</MudText>
                 }
@@ -86,17 +89,8 @@ else
 
     private async Task LoadFiles()
     {
-        _processingLoadToServer = true;
-        var customFileType = new FilePickerFileType(
-                new Dictionary<DevicePlatform, IEnumerable<string>>
-                                    {{ DevicePlatform.WinUI, new[] { ".zip" } }});
-        PickOptions options = new()
-            {
-                PickerTitle = "Выберите архив с собранным проектом",
-                FileTypes = customFileType,
-            };
-        var result = await FilePicker.PickAsync(options);
-        if (result == null)
+        var selectResult = await SelectZipFileAsync();
+        if (selectResult == null)
         {
             _processingLoadToServer = false;
             await InvokeAsync(() => StateHasChanged());
@@ -104,8 +98,8 @@ else
         }
         try
         {
-            await using var stream = File.OpenRead(result.FullPath);
-            var release = await ProjectData.UploadFile(_project.Id, new Refit.StreamPart(stream, result.FileName, result.ContentType));
+            await using var stream = File.OpenRead(selectResult.FullPath);
+            var release = await ProjectData.UploadFile(_project.Id, new Refit.StreamPart(stream, selectResult.FileName, selectResult.ContentType));
             Snackbar.Add($"Сборка успешно обновлена!", Severity.Success);
             _processingLoadToServer = false;
             await OnInitializedAsync();
@@ -128,13 +122,28 @@ else
         {
             var path = Path.Combine(folder, $"{_project.Name}.zip");
             var res = await ProjectData.DownloadLastRelease((Guid)_project.Id);
-            var bytes = await res.ReadAsByteArrayAsync();
-            File.WriteAllBytes(path, bytes);
+            var responseStream = await res.ReadAsStreamAsync();
+            await using var fs = File.OpenWrite(path);
+            await responseStream.CopyToAsync(fs);
             Snackbar.Add($"{path} Сохранен.", Severity.Success);
         }
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
+    }
+
+    private async Task<FileResult> SelectZipFileAsync()
+    {
+        _processingLoadToServer = true;
+        var customFileType = new FilePickerFileType(
+                new Dictionary<DevicePlatform, IEnumerable<string>>
+                                                    {{ DevicePlatform.WinUI, new[] { ".zip" } }});
+        PickOptions options = new()
+            {
+                PickerTitle = "Выберите архив с собранным проектом",
+                FileTypes = customFileType,
+            };
+        return await FilePicker.PickAsync(options);
     }
 }

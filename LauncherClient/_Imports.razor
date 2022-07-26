@@ -1,4 +1,5 @@
 ﻿@using System.Net.Http
+@using LauncherClient.Application.HttpServices
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -10,7 +11,15 @@
 @using LauncherClient.Data.Models
 @using LauncherClient.ApplicationLayer.HttpServices
 @using LauncherClient.Utilities
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@using LauncherClient.Data.Auth
+@using LauncherClient.Pages.ProjectPages
 
 @inject IProjectData ProjectData
+@inject IAccountsClient AccountsClient
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
+@inject ExternalAuthStateProvider AuthStateProvider
+@inject IDialogService DialogService
