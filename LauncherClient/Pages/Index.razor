@@ -12,7 +12,7 @@
             <ProjectsList IsWinService="true" />
         </MudTabPanel>
     </MudTabs>
-    <AuthorizeView Roles="Admin, Dev">
+    <AuthorizeView Roles="Dev">
         <Authorized>
             <MudButton Class="mt-n12" Style="align-self:center; width: 300px" Href="/createProject" Variant="Variant.Filled">Добавить новое приложение</MudButton>
         </Authorized>
@@ -28,5 +28,9 @@
     {
         var authState = await AuthTask;
         this.user = authState.User;
+        AuthStateProvider.AuthenticationStateChanged += async (s) => 
+        {
+            await InvokeAsync(() => StateHasChanged());
+        };
     }
 }

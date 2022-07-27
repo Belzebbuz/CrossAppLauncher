@@ -7,8 +7,9 @@ namespace LauncherClient.Utilities;
 
 public class ExternalAuthStateProvider : AuthenticationStateProvider
 {
+	private readonly object _locker = new();
 	public List<string> Roles { get; } = new List<string> { "Admin", "Dev", "Viewer" };
-
+	public AuthenticationState AuthenticationState { get; private set; }
 	public async Task Login(string token)
 	{
 		await SecureStorage.SetAsync("token", token);
@@ -29,22 +30,24 @@ public class ExternalAuthStateProvider : AuthenticationStateProvider
 			var token = await SecureStorage.GetAsync("token");
 			if (token != null)
 			{
-				//_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 				var claims = ParseClaimsFromJwt(token).ToList();
 				var identity = new ClaimsIdentity(claims, "jwt");
-				var state = new AuthenticationState(new ClaimsPrincipal(identity));
-				NotifyAuthenticationStateChanged(Task.FromResult(state));
-				return state;
+				AuthenticationState = new AuthenticationState(new ClaimsPrincipal(identity));
+				NotifyAuthenticationStateChanged(Task.FromResult(AuthenticationState));
+				return AuthenticationState;
 			}
 		}
 		catch (Exception ex)
 		{
-			//This should be more properly handled
 			Console.WriteLine("Request failed:" + ex.ToString());
 		}
 		return new AuthenticationState(new ClaimsPrincipal());
 	}
-
+	public static async Task<string> GetTokenAsync()
+	{
+		var token = await SecureStorage.GetAsync("token");
+		return token;
+	}
 	public static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
 	{
 		var claims = new List<Claim>();

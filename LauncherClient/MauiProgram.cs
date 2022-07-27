@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using Refit;
 using LauncherClient.Application.HttpServices;
+using LauncherClient.Application;
+using LauncherClient.Application.BackgroundServices;
 
 namespace LauncherClient;
 
@@ -27,7 +29,6 @@ public static class MauiProgram
 		builder.Services.AddMudServices();
 		builder.Services.AddApplication();
 		builder.Services.AddSingleton<IFilePicker>(FilePicker.Default);
-		builder.Services.AddSingleton<WeatherForecastService>();
 
 
 #if DEBUG
@@ -36,12 +37,13 @@ public static class MauiProgram
 #if WINDOWS
 		builder.Services.AddTransient<IFolderPicker, Platforms.Windows.FolderPicker>();
 #endif
-		builder.Services.AddScoped<ExternalAuthStateProvider>(); // This is our custom provider
-																 //When asking for the default Microsoft one, give ours!
+		builder.Services.AddSingleton<ExternalAuthStateProvider>(); 
 		builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<ExternalAuthStateProvider>());
 		builder.Services.AddAuthorizationCore();
 		builder.Services.AddSingleton<AuthenticatedUser>();
+		builder.Services.AddSingleton<IBackgroundService, GwtBackgroundService>();
 		var host = builder.Build();
+		var _ = host.Services.GetRequiredService<IBackgroundService>().ExecuteAsync();
 		return host;
 	}
 }

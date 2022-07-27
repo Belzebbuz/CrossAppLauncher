@@ -23,5 +23,9 @@ namespace LauncherClient.Application.HttpServices
 		[Post("/editRoles")]
 		[Headers("Authorization: Bearer")]
 		Task EditRolesAsync(RoleEditDTO dto);
+
+		[Get("/getjwt")]
+		[Headers("Authorization: Bearer")]
+		Task<AuthenticationResponse> GetJwtAsync();
 	}
 }
