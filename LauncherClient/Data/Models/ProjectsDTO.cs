@@ -10,6 +10,7 @@ namespace LauncherClient.Data.Models
 		public string Description { get; set; }
 		public bool IsWinService { get; set; }
 		public string ExeFile { get; set; }
+		public string CurrentVersion { get; set; }
 		public List<ReleaseAssemblyDTO> ReleaseAssemblies { get; set; }
 	}
 }

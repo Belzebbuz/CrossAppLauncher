@@ -18,18 +18,26 @@ namespace LauncherClient.ApplicationLayer.HttpServices
 		[Get("/Apps/filter/{isWinService}")]
 		Task<List<ProjectDTO>> GetProjectsByIsWinService(bool isWinService);
 
+		[Post("/Apps")]
+		Task<Guid> CreateProject(CreateProjectDTO createProjectDTO);
+
+		[Put("/Apps")]
+		Task UpdateProject(ProjectDTO ProjectDTO);
+
+		[Delete("/Apps/{id}")]
+		Task DeleteProject(Guid id);
+
 		[Multipart]
-		[Post("/Apps/{id}/addRelease")]
-		[Headers("Authorization: Bearer")]
+		[Post("/Releases/addRelease/{id}")]
 		Task<ReleaseAssemblyDTO> UploadFile(Guid? id, [AliasAs("file")] StreamPart stream);
 
-		[Get("/Apps/downloadRelease/{id}")]
-		[Headers("Authorization: Bearer")]
+		[Get("/Releases/downloadLastRelease/{id}")]
 		Task<HttpContent> DownloadLastRelease(Guid id);
 
-		[Post("/Apps")]
-		[Headers("Authorization: Bearer")]
-		Task<Guid> CreateProject(CreateProjectDTO createProjectDTO);
+		[Get("/Releases/downloadRelease/{id}")]
+		Task<HttpContent> DownloadRelease(Guid id);
+
+		
 
 	}
 }

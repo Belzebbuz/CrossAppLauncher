@@ -13,7 +13,6 @@ namespace LauncherClient.Data.Auth
 		[EmailAddress]
 		public string Email { get; set; }
 		[Required]
-		[StringLength(30, ErrorMessage = "Пароль должен состоять не менее чем из 8 символов", MinimumLength = 8)]
 		public string Password { get; set; }
 	}
 }

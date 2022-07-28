@@ -16,14 +16,15 @@ public partial class App : Microsoft.Maui.Controls.Application
 		Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
 		{
 #if WINDOWS
-            var mauiWindow = handler.VirtualView;
+			var mauiWindow = handler.VirtualView;
             var nativeWindow = handler.PlatformView;
+			nativeWindow.ExtendsContentIntoTitleBar = false;
             nativeWindow.Activate();
             IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
             WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
             AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.Resize(new SizeInt32(WindowWidth, WindowHeight));
-#endif
+#endif	
 		});
 		MainPage = new MainPage();
 	}

@@ -1,0 +1,35 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.EditNote" Class="mr-3 mb-n1" />
+            Редактирование приложения.
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+            <MudTextField T="string" @bind-Value=@Project.Name Label="Название приложения" Required="true" RequiredError="Название обязательно к заполнению!" />
+            <MudTextField T="string" @bind-Value=@Project.Description Label="Описание" Required="true" RequiredError="Описание обязательно к заполнению!" />
+            <MudTextField T="string" @bind-Value=@Project.ExeFile Label="Название исполняющего файла" Required="true" HelperText="myapp.exe" />
+            <MudCheckBox T="bool" @bind-Checked=@Project.IsWinService Label="Служба Windows" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" OnClick="Submit" Class="ml-auto">Сохранить</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public ProjectDTO Project { get; set; }
+
+    private MudForm form;
+    private bool success;
+    private string[] errors = { };
+    
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Project));
+    private void Cancel() => MudDialog.Cancel();
+}

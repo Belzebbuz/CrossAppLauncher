@@ -4,7 +4,7 @@
         <MudCardContent>
             <MudTextField Label="Почта" Class="mt-3"
                           @bind-Value="model.Email" For="@(() => model.Email)" />
-            <MudTextField Label="Пароль" HelperText="Choose a strong password" Class="mt-3"
+            <MudTextField Label="Пароль" HelperText="Длина пароля не меньше 8 символов" Class="mt-3"
                           @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
         </MudCardContent>
         <MudCardActions>
@@ -35,5 +35,4 @@
             Snackbar.Add($"{ex.Content}", Severity.Error);
         }
     }
-
 }

@@ -1,0 +1,67 @@
+﻿<MudButton Disabled=@_processingLoadToServer OnClick="@LoadFiles" Variant="Variant.Filled" Color="Color.Primary">
+    @if (_processingLoadToServer)
+    {
+        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">Загрузка</MudText>
+    }
+    else
+    {
+        <MudIcon Class="mr-2" Icon="@Icons.Filled.CloudUpload" />
+        <MudText>Загрузить</MudText>
+    }
+</MudButton>
+
+@code{
+    [Parameter]
+    public Guid? ProjectId { get; set; }
+    [Parameter]
+    public EventCallback OnRequestUpdate { get; set; }
+
+    private bool _processingLoadToServer;
+    private bool _processingDownload;
+
+    private async Task LoadFiles()
+    {
+        var selectResult = await SelectZipFileAsync();
+        if (selectResult == null)
+        {
+            _processingLoadToServer = false;
+            await OnRequestUpdate.InvokeAsync();
+            return;
+        }
+        try
+        {
+            await using var stream = File.OpenRead(selectResult.FullPath);
+            var release = await ProjectData.UploadFile(ProjectId, new Refit.StreamPart(stream, selectResult.FileName, selectResult.ContentType));
+            Snackbar.Add($"Сборка успешно обновлена!", Severity.Success);
+            _processingLoadToServer = false;
+            await OnRequestUpdate.InvokeAsync();
+        }
+        catch (Refit.ApiException ex)
+        {
+            Snackbar.Add(ex.Content + ex.Message, Severity.Error);
+            _processingLoadToServer = false;
+            await OnRequestUpdate.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}\n Ошибка при получении данных от сервера", Severity.Error);
+            _processingLoadToServer = false;
+            await OnRequestUpdate.InvokeAsync();
+        }
+    }
+
+    private async Task<FileResult> SelectZipFileAsync()
+    {
+        _processingLoadToServer = true;
+        var customFileType = new FilePickerFileType(
+                new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {{ DevicePlatform.WinUI, new[] { ".zip" } }});
+        PickOptions options = new()
+            {
+                PickerTitle = "Выберите архив с собранным проектом",
+                FileTypes = customFileType,
+            };
+        return await FilePicker.PickAsync(options);
+    }
+}

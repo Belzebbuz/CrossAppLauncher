@@ -1,0 +1,33 @@
+﻿<MudIconButton Icon="@Icons.Material.Filled.EditNote" Variant="Variant.Outlined" OnClick="@GoToEdit" />
+
+@code{
+    [Parameter]
+    public ProjectDTO Project { get; set; }
+
+    [Parameter]
+    public EventCallback OnRequestUpdate { get; set; }
+    private async Task GoToEdit()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Project", Project);
+        var dialog = Dialog.Show<EditProjectDialog>("Редактирование приложения", parameters);
+        var result = await dialog.Result;
+        if(result.Data != null)
+        {
+            try
+            {
+                await ProjectData.UpdateProject(Project);
+                await OnRequestUpdate.InvokeAsync();
+            }
+            catch (Refit.ApiException ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+                Snackbar.Add(ex.Content, Severity.Error);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+}

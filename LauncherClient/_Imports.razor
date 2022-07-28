@@ -17,10 +17,14 @@
 @using System.ComponentModel.DataAnnotations
 @using LauncherClient.Data.Auth
 @using LauncherClient.Pages.ProjectPages
+@using LauncherClient.Pages.ProjectPages.ProjectInfoPages
+@using System.Text.RegularExpressions
 
 @inject IProjectData ProjectData
 @inject IAccountsClient AccountsClient
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject ExternalAuthStateProvider AuthStateProvider
-@inject IDialogService DialogService
+@inject IDialogService Dialog
+@inject IFilePicker FilePicker
+@inject IFolderPicker FolderPicker

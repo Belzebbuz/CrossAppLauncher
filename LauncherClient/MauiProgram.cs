@@ -30,7 +30,6 @@ public static class MauiProgram
 		builder.Services.AddApplication();
 		builder.Services.AddSingleton<IFilePicker>(FilePicker.Default);
 
-
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
 #endif

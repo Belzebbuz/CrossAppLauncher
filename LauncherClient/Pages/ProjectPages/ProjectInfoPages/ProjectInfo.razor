@@ -1,0 +1,154 @@
+﻿@page "/projectInfo/{Id:guid}"
+
+
+@if (_project != null)
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+        <MudText Typo="Typo.h3">@_project.Name</MudText>
+        <MudIcon Icon="@(_project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" Size="Size.Medium" />
+    </MudStack>
+    <MudDivider Class="mb-4" />
+    <MudPaper Height="75vh" Class="flex-column p-3">
+        <MudStack Row="true" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Автор: @_project.UserEmail </MudText>
+            <MudStack Row="true">
+                <AuthorizeView Roles="Dev">
+                    <EditProjectButton Project="@_project" OnRequestUpdate="@UpdateStage"/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" OnClick="@DeleteApp" />
+                    <UploadButton ProjectId="@_project.Id" OnRequestUpdate="@UpdateStage" />
+                </AuthorizeView>
+                <MudButton OnClick="@DownloadLastRelease" Disabled=@_isDownloadButtonDisabled
+                       Variant="Variant.Outlined"
+                       Color="Color.Secondary" StartIcon="@Icons.Filled.CloudDownload">Установить</MudButton>
+            </MudStack>
+        </MudStack>
+        <MudText Class="mt-3" Typo="Typo.body1">@_project.Description</MudText>
+        <MudText Class="mt-3" Typo="Typo.body1">Версия: @_project.CurrentVersion</MudText>
+        <MudText Typo="Typo.body1">Исполняющий файл: @_project.ExeFile</MudText>
+        @if (_project.ReleaseAssemblies.Count > 0)
+        {
+            <MudText Typo="Typo.h6" Class="mt-3">История обновлений.</MudText>
+            <MudDivider Class="mb-3" />
+            <MudContainer Style="height: 40vh; overflow:auto;">
+
+                @foreach (var release in _project.ReleaseAssemblies.OrderByDescending(x => x.UpdateTime))
+                {
+                    <MudStack Row="true" Class="mb-3">
+                        <MudIconButton Size="Size.Small" OnClick="@(async () => await DownloadRelease(release.Id, release.Version))" Icon="@Icons.Material.Filled.Download" />
+                        <MudIcon Icon="@Icons.Material.Outlined.Info" />
+                        <MudText Typo="Typo.body1">Дата: @release.UpdateTime Автор: @release.UserEmail Версия: @release.Version</MudText>
+                    </MudStack>
+                    <MudText Typo="Typo.body2">@(release.PatchNote ?? "")</MudText>
+                }
+            </MudContainer>
+        }
+    </MudPaper>
+    <MudStack Row="true" Justify="Justify.FlexEnd">
+        <MudButton Class="mt-2" Href="/" Variant="Variant.Filled" Color="Color.Secondary">Назад</MudButton>
+    </MudStack>
+}
+else
+{
+    <LoadingProject />
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool _isDownloadButtonDisabled = true;
+    private ProjectDTO _project;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _project = await ProjectData.GetProjectById(Id);
+            if (_project.ReleaseAssemblies.Any())
+            {
+                _isDownloadButtonDisabled = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
+    }
+
+    private async void DownloadLastRelease()
+    {
+        var folder = await FolderPicker.PickFolder();
+        if (folder == null)
+            return;
+        var filename = Path.Combine(folder, $"{_project.Name}-v{_project.CurrentVersion}.zip");
+        await DownloadFile(filename, (Guid)_project.Id, async x => await ProjectData.DownloadLastRelease(x));
+    }
+
+    private async Task DownloadRelease(Guid id, string version)
+    {
+        var folder = await FolderPicker.PickFolder();
+        if (folder == null)
+            return;
+
+        var filename = Path.Combine(folder, $"{_project.Name}-v{version}.zip");
+        await DownloadFile(filename, id, async x => await ProjectData.DownloadRelease(id));
+    }
+
+    private async Task DownloadFile(string fileName, Guid id, Func<Guid, Task<HttpContent>> downloadRequest)
+    {
+        try
+        {
+            var res = await downloadRequest(id);
+            var responseStream = await res.ReadAsStreamAsync();
+            await using var fs = File.OpenWrite(fileName);
+            await responseStream.CopyToAsync(fs);
+            Snackbar.Add($"{fileName} Сохранен.", Severity.Success);
+        }
+        catch (Refit.ApiException ex)
+        {
+            Snackbar.Add(string.IsNullOrEmpty(ex.Content) ? ex.Message : ex.Content, Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+
+    private async void DeleteApp()
+    {
+        if (!await ShowConfirmDialog())
+            return;
+        try
+        {
+            await ProjectData.DeleteProject((Guid)_project.Id);
+            Snackbar.Add($"Приложение{_project.Name} полностью удалено!");
+            NavManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task<bool> ShowConfirmDialog()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Вы действительно хотите безвозратно удалить приложение со всеми релизами?");
+        parameters.Add("ButtonText", "Удалить");
+        parameters.Add("Color", Color.Error);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var dialog = Dialog.Show<ConfirmationDialog>("Удаление", parameters, options);
+        var result = await dialog.Result;
+        return result.Data == null ? false : true;
+    }
+
+    private async void UpdateStage(){
+        await OnInitializedAsync();
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+}

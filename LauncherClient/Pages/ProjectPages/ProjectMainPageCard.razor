@@ -1,16 +1,17 @@
-﻿
-
-<MudCard Class="mt-4">
+﻿<MudCard Class="mt-4">
     <MudCardContent>
-        <MudStack Row="true">
-            <MudIcon Icon="@(Project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" />
-            <MudText Typo="Typo.h5">@Project.Name</MudText>
-        </MudStack>
+        <MudGrid Justify="Justify.SpaceBetween">
+            <MudItem xs="6">
+                <MudStack Row="true">
+                    <MudIcon Icon="@(Project.IsWinService ? @Icons.Material.Filled.MiscellaneousServices : @Icons.Material.Filled.DesktopWindows)" />
+                    <MudText Typo="Typo.h5">@Project.Name</MudText>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
         <MudText Typo="Typo.body2">@Project.Description</MudText>
     </MudCardContent>
     <MudCardActions>
         <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="NavigateToProjectInfo">Подробнее</MudButton>
-
     </MudCardActions>
 </MudCard>
 
@@ -18,10 +19,10 @@
     [Parameter]
     public ProjectDTO Project { get; set; }
 
-    
-
     private void NavigateToProjectInfo()
     {
         NavManager.NavigateTo($"projectInfo/{Project.Id}");
     }
+
+    
 }

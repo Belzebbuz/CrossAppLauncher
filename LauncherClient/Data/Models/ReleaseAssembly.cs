@@ -10,5 +10,6 @@ namespace LauncherClient.Data.Models
 	{
 		public Guid Id { get; set; }
 		public string PatchNote { get; set; }
+		public string Version { get; set; }
 	}
 }
