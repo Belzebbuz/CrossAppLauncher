@@ -26,13 +26,19 @@
         try
         {
             var result = await AccountsClient.RegisterAsync(model);
-            await AuthStateProvider.Login(result.Token);
-            NavManager.NavigateTo("/");
+            await Dialog.ShowMessageBox("Подтверждение","На вашу почту отправлено письмо с ссылкой. Перейдите по ней что бы подтвердить вашу почту.");
+            StateHasChanged();
+            //await AuthStateProvider.Login(result.Token);
+            //NavManager.NavigateTo("/");
         }
         catch (Refit.ApiException ex)
         {
             Snackbar.Add($"{ex.Message}", Severity.Error);
             Snackbar.Add($"{ex.Content}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
         }
     }
 }

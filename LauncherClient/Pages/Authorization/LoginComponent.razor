@@ -35,6 +35,10 @@
             Snackbar.Add($"{ex.Message}", Severity.Error);
             Snackbar.Add($"{ex.Content}", Severity.Error);
         }
+        catch(Exception ex)
+        {
+            Snackbar.Add($"{ex.Message}", Severity.Error);
+        }
     }
 
 }

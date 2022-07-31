@@ -1,4 +1,5 @@
-﻿using LauncherClient.Data.Models;
+﻿using LauncherClient.Data.FileSending;
+using LauncherClient.Data.Models;
 using Refit;
 
 namespace LauncherClient.ApplicationLayer.HttpServices
@@ -37,7 +38,8 @@ namespace LauncherClient.ApplicationLayer.HttpServices
 		[Get("/Releases/downloadRelease/{id}")]
 		Task<HttpContent> DownloadRelease(Guid id);
 
-		
+		[Post("/Releases/uploadBlock")]
+		Task<HttpContent> UploadFileBlock(FileBlock block);
 
 	}
 }

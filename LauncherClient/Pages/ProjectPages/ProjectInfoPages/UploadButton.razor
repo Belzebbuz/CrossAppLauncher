@@ -1,7 +1,7 @@
 ﻿<MudButton Disabled=@_processingLoadToServer OnClick="@LoadFiles" Variant="Variant.Filled" Color="Color.Primary">
     @if (_processingLoadToServer)
     {
-        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true" />
+        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small"/>
         <MudText Class="ms-2">Загрузка</MudText>
     }
     else
@@ -45,7 +45,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"{ex.Message}\n Ошибка при получении данных от сервера", Severity.Error);
+            Snackbar.Add($"{ex.Message}", Severity.Error);
             _processingLoadToServer = false;
             await OnRequestUpdate.InvokeAsync();
         }
